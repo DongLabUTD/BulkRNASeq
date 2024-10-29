@@ -1,0 +1,60 @@
+##CONNECTING TO GANYMEDE##
+##MobaXterm is the reccomended program due to its graphical interface making file structure visualization much more clear aswell as drag and drop functionality to move files from your home device onto the server
+## Run the following command in MobaXterm
+ssh <NetID>@ganymede.utdallas.edu
+##This should promt you for your password NOTE:The cursor will not move or display your password, just type password and hit enter
+
+##GETTING STARTED##
+## Your landing directory on login is your personal node, should look something like "<NetID>@ganymede ~"
+ ## Useful commands for navigation
+	CTRL-L => Clear the Terminal
+	Ctrl-D => Logout
+	cd <folder name> => change directory
+		## Use " if folder name has spaces
+	cd / => go to root
+	cd .. => go up one folder
+	ls => list contents of active directory
+	ls -a => list all files and folders
+	pwd => displays path to active directory
+	mkdir <folder name> => create new folder/directory
+	mv file.txt <folder name> => move file to folder
+	mv <folder name> <folder name 2> => move folder into folder
+	mv filename.txt filename2.txt => rename file
+	mv <folder name>/.. => move folder up in hierarchy
+	rm <file name> => delete file
+	rm -r <folder name> => delete folder
+	squeue => prints the current job queue across all nodes
+		##useful for checking on the status of a computing job
+	module spider => lists all available modules available on the HPCC
+		## STAR, Kallisto, and Bowtie are just a few relevant packages, any requests for new modules or updates to existing modules should be directed to circ-assist@utdallas.edu.
+	module load <module> => loads a module for use
+		## Note: module specific commands will have no function unless the relevant module is loaded first
+	module list => lists all loaded modules
+
+## Ganymede has two user writable storage directories accessible from the head node (login landing directory)
+/home (landing directory) => 1/10 gb/s network speed, 30 GB hard quota, backed up nightly
+	##NOTE: due to its slow speed and small storage quota only use this node for scripts, runfiles, and smaller output files, dont run jobs from /home as it slows the system down for all users
+~/scratch => 40/56/100 gb/s network speed, 10 TB hard quota, NO BACKUP
+
+##SUBMITTING JOBS##
+##Job submissions use the Slurm Workload Manager to facilitate access to the compute nodes from the login nodes (/home and /scratch)
+##Submit jobs to Slurm using a batch script, at the beggining of your batch script you can specify Slurm batch settings using the command "#SBATCH", at a minimum all jobs must include the following settings
+	1. The partition to request resources from (default: normal on Ganymede). For example: #SBATCH --partition=normal
+	2. The number of nodes your workload requires. Example: #SBATCH --nodes=2
+	3. The total number of tasks required. Example: #SBATCH --ntasks=32. Alternatively, you can specify the number of tasks per node with #SBATCH --ntasks-per-node=16
+	4. The maximum time required for your workload in the format Days-Hours:Minutes:Seconds. For Example: --time=1-12:00:00 provides a maximum run time of one day and twelve hours.
+		##A full list of available settings are available here: https://slurm.schedmd.com/sbatch.html
+## The following is an example of a batch script provided by the Ganymede team:https://docs.circ.utdallas.edu/user-guide/systems/ganymede.html
+## Runs a python script parallelized with mpi4py on two nodes with a total of thirty two tasks with a maximum runtime of one hour with an email being sent to the provided email on job completion
+		#!/bin/bash
+
+		#SBATCH     --partition=normal
+		#SBATCH     --nodes=2
+		#SBATCH     --ntasks=32
+		#SBATCH     --time=01:00:00
+		#SBATCH     --mail-type=ALL
+		#SBATCH     --mail-user=your.email@utdallas.edu
+
+		prun python my_scripy.py
+## The script being run contains the loading of all relevant modules and sample files, along with the commands associated with any manipulation or analysis of the input files, aswell as commands for how and where to save any outputs
+	## /scratch is a useful node for testing the functionality of ones code on a small number of samples before scaling up to the batch input of many samples, when scaling ensure all file paths to your input files are accurate and outputs are being saved where you need them
